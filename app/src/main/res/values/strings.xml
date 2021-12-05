@@ -1,3 +1,13 @@
 <resources>
     <string name="app_name">TestPractice</string>
+    <string name="et_title_hint">行きたい場所&lt;font color=\"red\"&gt;*必須項目&lt;/font&gt;</string>
+    <string name="et_comment_hint">コメント</string>
+    <string name="cb_title">行った！</string>
+    <string name="delete">削除</string>
+    <string name="save">保存</string>
+    <string name="nav_all">すべて</string>
+    <string name="nav_gone">行った！</string>
+    <string name="nav_someday">いつか行きたい</string>
+    <string name="menu_filter">フィルタリング</string>
+    <string name="no_data">no_data</string>
 </resources>
