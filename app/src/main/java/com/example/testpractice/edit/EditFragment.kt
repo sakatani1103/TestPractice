@@ -8,9 +8,11 @@ import android.view.inputmethod.InputMethodManager
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
+import com.example.testpractice.data.DefaultPlaceRepository
 import com.example.testpractice.databinding.FragmentEditBinding
 import com.example.testpractice.others.EventObserver
 import com.example.testpractice.others.Status
+import com.google.android.material.snackbar.Snackbar
 
 class EditFragment : Fragment() {
     private var _binding: FragmentEditBinding? = null
@@ -19,7 +21,9 @@ class EditFragment : Fragment() {
 
     private val args: EditFragmentArgs by navArgs()
 
-    private val viewModel by viewModels<EditViewModel>()
+    private val viewModel by viewModels<EditViewModel>{
+        EditViewModelFactory(DefaultPlaceRepository.getRepository(requireActivity().application))
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -59,11 +63,18 @@ class EditFragment : Fragment() {
 
     private fun subscribeToObserve(){
         viewModel.insertAndUpdateStatus.observe(viewLifecycleOwner, EventObserver { result ->
-            if (result.status == Status.SUCCESS){
-                this.findNavController().popBackStack()
-            }
-        })
-    }
-
-
+            when (result.status) {
+                Status.SUCCESS -> this.findNavController().popBackStack()
+                Status.ERROR -> {
+                    result.message?.let {
+                        Snackbar.make(binding.root,
+                            it, Snackbar.LENGTH_LONG).show()
+                    }
+                    binding.etTitle.setText(result.data?.title)
+                }
+                }
+            })
+        }
 }
+
+

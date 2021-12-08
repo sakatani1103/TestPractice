@@ -2,22 +2,20 @@ package com.example.testpractice.list
 
 import android.app.Application
 import androidx.lifecycle.*
-import com.example.testpractice.R
 import com.example.testpractice.data.DefaultPlaceRepository
+import com.example.testpractice.data.PlaceRepository
 import com.example.testpractice.data.local.Place
 import com.example.testpractice.others.Event
-import com.example.testpractice.others.Result
 
-class ListViewModel(application: Application) :  AndroidViewModel(application) {
-    private val placeRepository = DefaultPlaceRepository.getRepository(application)
+class ListViewModel(private val placeRepository: PlaceRepository) :  ViewModel() {
 
-    private var _currentFiltering = MutableLiveData(FilterType.ALL)
-    val places: LiveData<List<Place>> = _currentFiltering.switchMap { type ->
+    var currentFiltering = MutableLiveData(FilterType.ALL)
+    val places: LiveData<List<Place>> = currentFiltering.switchMap { type ->
         placeRepository.observePlaces().switchMap {  filterItems(type, it) }
     }
 
-    private val _navigateToEdit = MutableLiveData<Map<String, String?>?>()
-    val navigateToEdit: LiveData<Map<String, String?>?> = _navigateToEdit
+    private val _navigateToEdit = MutableLiveData<Event<Map<String, String?>>>()
+    val navigateToEdit: LiveData<Event<Map<String, String?>>> = _navigateToEdit
 
     private fun filterItems(filterType: FilterType, places: List<Place>) : LiveData<List<Place>>{
         val result = MutableLiveData<List<Place>>()
@@ -34,20 +32,25 @@ class ListViewModel(application: Application) :  AndroidViewModel(application) {
     }
 
     fun setFilter(filterType: FilterType){
-        _currentFiltering.value = filterType
+        currentFiltering.value = filterType
     }
 
     fun navigateToEdit(id: String) {
-        _navigateToEdit.value = mutableMapOf("type" to "edit", "id" to id)
+        _navigateToEdit.value = Event(mutableMapOf("type" to "edit", "id" to id))
     }
 
     fun navigateToAdd(){
-        _navigateToEdit.value = mutableMapOf("type" to "add", "id" to null)
+        _navigateToEdit.value = Event(mutableMapOf("type" to "add", "id" to null))
     }
 
-    fun doneNavigateToEdit(){
-        _navigateToEdit.value = null
-    }
+}
+
+@Suppress("UNCHECKED_CAST")
+class ListViewModelFactory(
+    private val placeRepository: PlaceRepository
+): ViewModelProvider.NewInstanceFactory() {
+    override fun <T : ViewModel> create(modelClass: Class<T>) =
+        (ListViewModel(placeRepository) as T)
 }
 
 enum class FilterType {
