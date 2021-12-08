@@ -6,9 +6,11 @@ import androidx.room.Room
 import com.example.testpractice.data.local.Place
 import com.example.testpractice.data.local.PlaceDatabase
 import com.example.testpractice.data.local.PlaceLocalDataSource
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 
-class DefaultPlaceRepository private constructor(application: Application){
-    private val placeLocalDataSource: PlaceLocalDataSource
+class DefaultPlaceRepository (private val placeLocalDataSource: PlaceDataSource) : PlaceRepository {
+
 
     companion object {
         @Volatile
@@ -16,37 +18,32 @@ class DefaultPlaceRepository private constructor(application: Application){
 
         fun getRepository(application: Application): DefaultPlaceRepository {
             return INSTANCE ?: synchronized(this) {
-                DefaultPlaceRepository(application).also {
+                val database = Room.databaseBuilder(application, PlaceDatabase::class.java,"Place.db")
+                    .build()
+                DefaultPlaceRepository(PlaceLocalDataSource(database.PlaceDao())).also {
                     INSTANCE = it
                 }
             }
         }
     }
 
-    init {
-        val database = Room.databaseBuilder(application.applicationContext,
-        PlaceDatabase::class.java, "Place.tb")
-            .build()
-        placeLocalDataSource = PlaceLocalDataSource(database.PlaceDao())
-    }
-
-    fun observePlaces(): LiveData<List<Place>>{
+    override fun observePlaces(): LiveData<List<Place>>{
         return placeLocalDataSource.observePlaces()
     }
 
-    suspend fun insertPlace(place: Place) {
+    override suspend fun insertPlace(place: Place) {
         placeLocalDataSource.insertPlace(place)
     }
 
-    suspend fun updatePlace(place: Place) {
+    override suspend fun updatePlace(place: Place) {
         placeLocalDataSource.updatePlace(place)
     }
 
-    suspend fun deletePlace(id: String) {
+    override suspend fun deletePlace(id: String) {
         placeLocalDataSource.deletePlace(id)
     }
 
-    suspend fun getPlace(id: String) : Place {
+    override suspend fun getPlace(id: String) : Place {
         return placeLocalDataSource.getPlace(id)
     }
 }

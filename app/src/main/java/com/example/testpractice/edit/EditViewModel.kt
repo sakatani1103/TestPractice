@@ -1,23 +1,20 @@
 package com.example.testpractice.edit
 
 import android.app.Application
+import androidx.lifecycle.*
 
-import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.viewModelScope
 import com.example.testpractice.data.DefaultPlaceRepository
+import com.example.testpractice.data.PlaceRepository
 import com.example.testpractice.data.local.Place
 import com.example.testpractice.others.Event
 import kotlinx.coroutines.launch
 import com.example.testpractice.others.Result
 
-class EditViewModel(application: Application): AndroidViewModel(application) {
-    private val placeRepository = DefaultPlaceRepository.getRepository(application)
-
+class EditViewModel(private val placeRepository: PlaceRepository): ViewModel() {
     private val _insertAndUpdateStatus = MutableLiveData<Event<Result<Place>>>()
     val insertAndUpdateStatus: LiveData<Event<Result<Place>>> = _insertAndUpdateStatus
 
+    var saveType = SaveType.INSERT
     var imageUrl = MutableLiveData<String>()
     var title = MutableLiveData<String>()
     var comment = MutableLiveData<String>()
@@ -29,6 +26,7 @@ class EditViewModel(application: Application): AndroidViewModel(application) {
         if (id != null) {
             placeId.value = id!!
             isNewTask.value = false
+            saveType = SaveType.UPDATE
 
             viewModelScope.launch {
                 val data = placeRepository.getPlace(id)
@@ -45,6 +43,10 @@ class EditViewModel(application: Application): AndroidViewModel(application) {
         val insertComment = comment.value ?: ""
         val insertHasBeenTo = hasBeenTo.value ?: false
         val insertImageUrl = imageUrl.value ?: "no_image"
+        if (insertTitle.isEmpty()){
+           _insertAndUpdateStatus.value = Event(Result.error("タイトルが空です。", Place(insertTitle, insertComment)))
+            return
+        }
         if (isNewTask.value!!){
             val insert = Place(insertTitle, insertComment, insertHasBeenTo, insertImageUrl)
             insertPlace(insert)
@@ -69,6 +71,10 @@ class EditViewModel(application: Application): AndroidViewModel(application) {
     }
 
     fun deletePlace() {
+        if (saveType == SaveType.INSERT) {
+            _insertAndUpdateStatus.value = Event(Result.error("この場所は登録されていません。", null))
+            return
+        }
         viewModelScope.launch {
             placeRepository.deletePlace(placeId.value!!)
         }
@@ -78,6 +84,14 @@ class EditViewModel(application: Application): AndroidViewModel(application) {
     fun setHasBeenTo(boolean: Boolean) {
         hasBeenTo.value = boolean
     }
-
-
 }
+
+@Suppress("UNCHECKED_CAST")
+class EditViewModelFactory(
+    private val placeRepository: PlaceRepository
+) : ViewModelProvider.NewInstanceFactory() {
+    override fun <T : ViewModel> create(modelClass: Class<T>): T =
+        (EditViewModel(placeRepository) as T)
+}
+
+enum class SaveType { INSERT, UPDATE}
