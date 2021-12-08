@@ -8,7 +8,7 @@ import android.view.inputmethod.InputMethodManager
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
-import com.example.testpractice.data.DefaultPlaceRepository
+import com.example.testpractice.PlaceApplication
 import com.example.testpractice.databinding.FragmentEditBinding
 import com.example.testpractice.others.EventObserver
 import com.example.testpractice.others.Status
@@ -21,8 +21,8 @@ class EditFragment : Fragment() {
 
     private val args: EditFragmentArgs by navArgs()
 
-    private val viewModel by viewModels<EditViewModel>{
-        EditViewModelFactory(DefaultPlaceRepository.getRepository(requireActivity().application))
+    private val viewModel by viewModels<EditViewModel> {
+        EditViewModelFactory((requireContext().applicationContext as PlaceApplication).placeRepository)
     }
 
     override fun onCreateView(
@@ -39,15 +39,18 @@ class EditFragment : Fragment() {
         binding.lifecycleOwner = viewLifecycleOwner
         viewModel.start(args.id)
         binding.etTitle.setOnKeyListener { _, i, keyEvent ->
-            return@setOnKeyListener setKeyBoard(view, i, keyEvent) }
+            return@setOnKeyListener setKeyBoard(view, i, keyEvent)
+        }
         binding.etComment.setOnKeyListener { _, i, keyEvent ->
-            return@setOnKeyListener setKeyBoard(view, i, keyEvent)  }
+            return@setOnKeyListener setKeyBoard(view, i, keyEvent)
+        }
         subscribeToObserve()
     }
 
-    private fun setKeyBoard(view: View, i: Int, keyEvent: KeyEvent): Boolean{
-        if((keyEvent.action == KeyEvent.ACTION_UP && i == KeyEvent.KEYCODE_ENTER)||
-            (keyEvent.action == KeyEvent.ACTION_DOWN && i == KeyEvent.KEYCODE_BACK)) {
+    private fun setKeyBoard(view: View, i: Int, keyEvent: KeyEvent): Boolean {
+        if ((keyEvent.action == KeyEvent.ACTION_UP && i == KeyEvent.KEYCODE_ENTER) ||
+            (keyEvent.action == KeyEvent.ACTION_DOWN && i == KeyEvent.KEYCODE_BACK)
+        ) {
             val imm = activity?.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
             imm.hideSoftInputFromWindow(view.windowToken, InputMethodManager.RESULT_UNCHANGED_SHOWN)
             return true
@@ -61,20 +64,22 @@ class EditFragment : Fragment() {
         _binding = null
     }
 
-    private fun subscribeToObserve(){
+    private fun subscribeToObserve() {
         viewModel.insertAndUpdateStatus.observe(viewLifecycleOwner, EventObserver { result ->
             when (result.status) {
                 Status.SUCCESS -> this.findNavController().popBackStack()
                 Status.ERROR -> {
                     result.message?.let {
-                        Snackbar.make(binding.root,
-                            it, Snackbar.LENGTH_LONG).show()
+                        Snackbar.make(
+                            binding.root,
+                            it, Snackbar.LENGTH_LONG
+                        ).show()
                     }
                     binding.etTitle.setText(result.data?.title)
                 }
-                }
-            })
-        }
+            }
+        })
+    }
 }
 
 

@@ -8,8 +8,8 @@ import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.testpractice.PlaceApplication
 import com.example.testpractice.R
-import com.example.testpractice.data.DefaultPlaceRepository
 import com.example.testpractice.databinding.FragmentListBinding
 import com.example.testpractice.others.EventObserver
 
@@ -19,7 +19,7 @@ class ListFragment : Fragment() {
         get() = _binding!!
 
     private val viewModel by viewModels<ListViewModel> {
-        ListViewModelFactory(DefaultPlaceRepository.getRepository(requireActivity().application))
+        ListViewModelFactory((requireContext().applicationContext as PlaceApplication).placeRepository)
     }
     private lateinit var listAdapter: ListAdapter
 
@@ -73,17 +73,22 @@ class ListFragment : Fragment() {
     private fun subscribeToObserver() {
         viewModel.places.observe(viewLifecycleOwner, { list ->
             listAdapter.places = list
-            }
+        }
         )
         viewModel.navigateToEdit.observe(viewLifecycleOwner, EventObserver { it ->
             val type = it["type"].toString()
-            if (type == "add") { this.findNavController().navigate(ListFragmentDirections.actionListFragmentToEditFragment(null))}
-            else { this.findNavController().navigate(ListFragmentDirections.actionListFragmentToEditFragment(it["id"]))}
-        } )
+            if (type == "add") {
+                this.findNavController()
+                    .navigate(ListFragmentDirections.actionListFragmentToEditFragment(null))
+            } else {
+                this.findNavController()
+                    .navigate(ListFragmentDirections.actionListFragmentToEditFragment(it["id"]))
+            }
+        })
     }
 
     private fun setupRecyclerView() {
-        listAdapter = ListAdapter(PlaceListListener { id ->  viewModel.navigateToEdit(id)})
+        listAdapter = ListAdapter(PlaceListListener { id -> viewModel.navigateToEdit(id) })
         binding.listRv.apply {
             adapter = listAdapter
             layoutManager = GridLayoutManager(context, 2, RecyclerView.VERTICAL, false)

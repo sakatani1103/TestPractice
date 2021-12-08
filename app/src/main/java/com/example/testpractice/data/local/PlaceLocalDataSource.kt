@@ -2,7 +2,6 @@ package com.example.testpractice.data.local
 
 import androidx.lifecycle.LiveData
 import com.example.testpractice.data.PlaceDataSource
-import com.example.testpractice.data.local.Place
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext

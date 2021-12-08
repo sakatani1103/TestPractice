@@ -9,5 +9,5 @@ import androidx.room.RoomDatabase
     exportSchema = false
 )
 abstract class PlaceDatabase: RoomDatabase() {
-    abstract fun PlaceDao(): PlaceDao
+    abstract fun placeDao(): PlaceDao
 }

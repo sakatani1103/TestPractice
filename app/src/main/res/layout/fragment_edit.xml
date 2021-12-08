@@ -85,8 +85,6 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="8dp"
-                android:enabled="@{!viewModel.isNewTask()}"
-                android:textColor="@{viewModel.isNewTask() ? @color/filtered_purple : @color/purple_700 }"
                 android:onClick="@{() -> viewModel.deletePlace()}"
                 style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                 android:text="@string/delete" />
