@@ -1,17 +1,13 @@
 package com.example.testpractice.list
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import androidx.test.core.app.ApplicationProvider
-import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.example.testpractice.data.FakePlaceRepository
 import com.example.testpractice.data.local.Place
 import com.example.testpractice.getOrAwaitValue
 import com.google.common.truth.Truth.assertThat
-
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.junit.runner.RunWith
 
 class ListViewModelTest {
 

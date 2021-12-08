@@ -1,16 +1,13 @@
 package com.example.testpractice.edit
 
-import android.app.Application
 import androidx.lifecycle.*
-
-import com.example.testpractice.data.DefaultPlaceRepository
 import com.example.testpractice.data.PlaceRepository
 import com.example.testpractice.data.local.Place
 import com.example.testpractice.others.Event
 import kotlinx.coroutines.launch
 import com.example.testpractice.others.Result
 
-class EditViewModel(private val placeRepository: PlaceRepository): ViewModel() {
+class EditViewModel(private val placeRepository: PlaceRepository) : ViewModel() {
     private val _insertAndUpdateStatus = MutableLiveData<Event<Result<Place>>>()
     val insertAndUpdateStatus: LiveData<Event<Result<Place>>> = _insertAndUpdateStatus
 
@@ -20,12 +17,10 @@ class EditViewModel(private val placeRepository: PlaceRepository): ViewModel() {
     var comment = MutableLiveData<String>()
     var placeId = MutableLiveData<String>()
     var hasBeenTo = MutableLiveData(false)
-    var isNewTask = MutableLiveData(true)
 
-    fun start(id: String?){
+    fun start(id: String?) {
         if (id != null) {
             placeId.value = id!!
-            isNewTask.value = false
             saveType = SaveType.UPDATE
 
             viewModelScope.launch {
@@ -39,22 +34,32 @@ class EditViewModel(private val placeRepository: PlaceRepository): ViewModel() {
     }
 
     fun savePlace() {
-        val insertTitle = title.value!!
+        val insertTitle = title.value ?: ""
         val insertComment = comment.value ?: ""
         val insertHasBeenTo = hasBeenTo.value ?: false
         val insertImageUrl = imageUrl.value ?: "no_image"
-        if (insertTitle.isEmpty()){
-           _insertAndUpdateStatus.value = Event(Result.error("タイトルが空です。", Place(insertTitle, insertComment)))
+        if (insertTitle.isEmpty()) {
+            _insertAndUpdateStatus.value =
+                Event(Result.error("タイトルが空です。", Place(insertTitle, insertComment)))
             return
         }
-        if (isNewTask.value!!){
-            val insert = Place(insertTitle, insertComment, insertHasBeenTo, insertImageUrl)
-            insertPlace(insert)
-            _insertAndUpdateStatus.value = Event(Result.success(insert))
-        } else {
-            val update = Place(insertTitle, insertComment, insertHasBeenTo, insertImageUrl, placeId.value!!)
-            updatePlace(update)
-            _insertAndUpdateStatus.value = Event(Result.success(update))
+        when (saveType) {
+            SaveType.INSERT -> {
+                val insert = Place(insertTitle, insertComment, insertHasBeenTo, insertImageUrl)
+                insertPlace(insert)
+                _insertAndUpdateStatus.value = Event(Result.success(insert))
+            }
+            SaveType.UPDATE -> {
+                val update = Place(
+                    insertTitle,
+                    insertComment,
+                    insertHasBeenTo,
+                    insertImageUrl,
+                    placeId.value!!
+                )
+                updatePlace(update)
+                _insertAndUpdateStatus.value = Event(Result.success(update))
+            }
         }
     }
 
@@ -94,4 +99,4 @@ class EditViewModelFactory(
         (EditViewModel(placeRepository) as T)
 }
 
-enum class SaveType { INSERT, UPDATE}
+enum class SaveType { INSERT, UPDATE }
