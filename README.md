@@ -1,18 +1,22 @@
-## テスト勉強用
+## テスト勉強用アプリ
 
 ### 概要
 
 テストの勉強成果として作成した簡単なアプリです。<br>
 行って見たい場所を記録することができます。<br>
 
+![TestPracticeModified](https://user-images.githubusercontent.com/60771916/145353072-e7117efa-3a3b-4d65-b82a-31906ea020c4.gif)
+
 ### 各ブランチについて
 - app : ベースとなるアプリになります。
 - unitTest : ViewModelの単体テストを記述しました。
 - integrationTest : ViewModelとFragmentの統合テストを記述しました。
+- room : Dao と LocalDataSourceのテストを記述しました。
+- endToEndTest : ActivityTest (homeFragmentから追加、編集、削除作業)とNavigationTest(戻るボタン)を記述しました。
 
 ### 使用したライブラリ
 - assertion : Truth
-- integrationTest : Espresso
+- UiTest : Espresso
 - navigationTest : Mockito
 
 ### 参考
