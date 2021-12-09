@@ -42,11 +42,4 @@ class AndroidTestFakePlaceRepository : PlaceRepository {
         }
         return placeItems.elementAt(getIndex)
     }
-
-    fun addPlaces(vararg places: Place) {
-        for (place in places) {
-            placeItems.add(place)
-        }
-        observablePlaceItems.value = placeItems
-    }
 }
